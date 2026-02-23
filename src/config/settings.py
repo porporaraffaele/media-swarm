@@ -21,6 +21,9 @@ class Settings(BaseSettings):
     telegram_bot_token: str = ""
     telegram_chat_id: str = ""
 
+    # Search
+    tavily_api_key: str = ""
+
     # Google
     google_api_key: str = ""
 

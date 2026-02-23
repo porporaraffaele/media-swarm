@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Git
+.git/
+.gitignore
+
+# Docker
+docker/pgvector/data/
+
+# Agent UI (separate service)
+agent-ui/
+
+# Claude worktrees
+.claude/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Outputs (will be mounted as volume)
+outputs/
+logs/
+
+# Tests
+tests/
+pytest.ini
+
+# Docs
+*.md
+LICENSE

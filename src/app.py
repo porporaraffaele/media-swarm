@@ -3,6 +3,7 @@
 Starts the FastAPI server with:
 - All 11 agent teams registered via Agno AgentOS
 - Custom admin routes for knowledge, reports, and agent configuration
+- Telegram bot running in parallel via PTB polling
 - Agent UI frontend connects to this server at port 7777
 
 Usage:
@@ -13,6 +14,7 @@ Prerequisites:
 """
 
 import logging
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
@@ -25,11 +27,33 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# Global reference for Telegram bot (set during lifespan)
+_tg_app = None
+
+
+@asynccontextmanager
+async def _lifespan(app: FastAPI):
+    """Manage application lifecycle: start/stop Telegram bot."""
+    global _tg_app
+    from src.telegram.bot import create_telegram_app, stop_telegram_bot
+
+    _tg_app = create_telegram_app()
+    if _tg_app is not None:
+        logger.info("Starting Telegram bot polling...")
+        await _tg_app.initialize()
+        await _tg_app.start()
+        await _tg_app.updater.start_polling(drop_pending_updates=True)
+        logger.info("Telegram bot is running")
+
+    yield  # App is running
+
+    await stop_telegram_bot(_tg_app)
+
 
 def _create_app() -> FastAPI:
     """Create the full Media Swarm application.
 
-    1. Creates a base FastAPI app with custom admin routes
+    1. Creates a base FastAPI app with custom admin routes + Telegram lifespan
     2. Imports all 11 teams (requires PostgreSQL running)
     3. Wraps everything in AgentOS which provides team/agent/session routes
     4. Returns the combined FastAPI app
@@ -49,11 +73,12 @@ def _create_app() -> FastAPI:
     from src.agents.news.team import news_team
     from src.db.connection import db
 
-    # Base app with custom admin routes
+    # Base app with custom admin routes and Telegram bot lifespan
     base_app = FastAPI(
         title="Media Swarm",
         description="AI-powered media company with 11 specialized agent teams",
         version="0.1.0",
+        lifespan=_lifespan,
     )
     base_app.include_router(health.router)
     base_app.include_router(knowledge_admin.router)
@@ -68,6 +93,7 @@ def _create_app() -> FastAPI:
             "status": "running",
             "teams": 11,
             "sub_agents": 73,
+            "telegram": _tg_app is not None,
             "docs": "/docs",
             "agent_ui": "http://localhost:3000",
         }

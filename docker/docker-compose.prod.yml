@@ -1,0 +1,65 @@
+# Media Swarm - Production Docker Compose
+# Runs the full system 24/7 with automatic restart
+#
+# Usage:
+#   docker compose -f docker/docker-compose.prod.yml up -d
+#
+# Prerequisites:
+#   - Copy .env.example to .env and fill in your API keys
+#   - Ensure ports 7777 and 5532 are available
+
+services:
+  pgvector:
+    image: pgvector/pgvector:pg16
+    container_name: media-swarm-pgvector
+    command: postgres -c max_connections=500 -c shared_buffers=256MB
+    environment:
+      POSTGRES_DB: ai
+      POSTGRES_USER: ai
+      POSTGRES_PASSWORD: ai
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./pgvector/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5532:5432"
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ai -d ai"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    container_name: media-swarm-app
+    env_file:
+      - ../.env
+    environment:
+      # Override DB URL to use the Docker service name
+      DATABASE_URL: postgresql+psycopg://ai:ai@pgvector:5432/ai
+    ports:
+      - "7777:7777"
+    volumes:
+      - app-outputs:/app/outputs
+      - app-logs:/app/logs
+    depends_on:
+      pgvector:
+        condition: service_healthy
+    restart: always
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7777/admin/health"]
+      interval: 30s
+      timeout: 10s
+      start_period: 60s
+      retries: 3
+
+volumes:
+  pgdata:
+    driver: local
+  app-outputs:
+    driver: local
+  app-logs:
+    driver: local
