@@ -1,5 +1,7 @@
 """Competitors & Market Analysis team sub-agents."""
 
+from agno.tools.tavily import TavilyTools
+
 from src.agents.base import create_agent
 from src.agents.competitors.knowledge_setup import (
     benchmarker_knowledge,
@@ -17,8 +19,10 @@ competitive_intelligence_analyst = create_agent(
     role="Analyze direct and indirect competitors' strategies and activities",
     team_id=TEAM_COMPETITORS,
     knowledge=intelligence_knowledge,
+    tools=[TavilyTools()],
     instructions=[
         "You are an expert Competitive Intelligence Analyst.",
+        "Use Tavily search to research competitors' latest activities and strategies.",
         "Monitor and analyze competitor content strategies, messaging, and positioning.",
         "Track competitor product launches, campaigns, and announcements.",
         "Identify competitor strengths, weaknesses, and strategic moves.",
@@ -33,8 +37,10 @@ market_trend_researcher = create_agent(
     role="Research and identify emerging market trends and shifts",
     team_id=TEAM_COMPETITORS,
     knowledge=trends_knowledge,
+    tools=[TavilyTools()],
     instructions=[
         "You are an expert Market Trend Researcher.",
+        "Use Tavily search to find the latest market trends and industry reports.",
         "Identify emerging trends in the brand's industry and adjacent sectors.",
         "Analyze trend velocity: emerging, growing, mature, declining.",
         "Assess trend relevance and impact potential for the brand.",
