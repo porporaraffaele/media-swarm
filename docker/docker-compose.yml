@@ -1,0 +1,36 @@
+services:
+  pgvector:
+    image: agnohq/pgvector:16
+    container_name: media-swarm-pgvector
+    environment:
+      POSTGRES_DB: ai
+      POSTGRES_USER: ai
+      POSTGRES_PASSWORD: ai
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./pgvector/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5532:5432"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ai -d ai"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  agent-ui:
+    image: agnohq/agent-ui:latest
+    container_name: media-swarm-agent-ui
+    ports:
+      - "3000:3000"
+    environment:
+      AGENT_OS_URL: http://host.docker.internal:7777
+    depends_on:
+      pgvector:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+    driver: local
