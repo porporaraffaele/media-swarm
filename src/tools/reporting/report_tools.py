@@ -9,7 +9,7 @@ import json
 import logging
 from datetime import datetime, timezone
 
-from agno.tools.toolkit import Toolkit
+from agno.tools import Toolkit
 
 from src.db.tables import get_connection
 
@@ -20,9 +20,9 @@ class ReportTools(Toolkit):
     """Toolkit for managing micro-task reports in the database."""
 
     def __init__(self, team_id: str, agent_id: str):
+        super().__init__(name="report_tools")
         self.team_id = team_id
         self.agent_id = agent_id
-        super().__init__(name="report_tools")
         self.register(self.save_report)
         self.register(self.get_recent_reports)
 

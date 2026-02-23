@@ -4,7 +4,6 @@ These routes allow adding, listing, and removing documents from any
 sub-agent's isolated knowledge base via the admin API.
 """
 
-import json
 import logging
 from uuid import UUID
 

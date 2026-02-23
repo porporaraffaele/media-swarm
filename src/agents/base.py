@@ -2,7 +2,7 @@
 
 All ~80 sub-agents across all teams use this factory to ensure consistent:
 - LLM model selection
-- Database/storage connection
+- Database connection
 - Memory settings
 - Knowledge integration
 - Report tools
@@ -10,10 +10,10 @@ All ~80 sub-agents across all teams use this factory to ensure consistent:
 """
 
 from agno.agent import Agent
-from agno.knowledge.agent import AgentKnowledge
+from agno.knowledge.knowledge import Knowledge
 
 from src.config.models import get_claude_haiku, get_claude_sonnet
-from src.db.connection import storage
+from src.db.connection import db
 from src.tools.reporting.report_tools import ReportTools
 
 
@@ -23,23 +23,23 @@ def create_agent(
     role: str,
     team_id: str,
     instructions: list[str],
-    knowledge: AgentKnowledge | None = None,
+    knowledge: Knowledge | None = None,
     tools: list | None = None,
-    response_model: type | None = None,
+    output_model: type | None = None,
     use_haiku: bool = False,
     num_history_runs: int = 5,
 ) -> Agent:
     """Create a sub-agent with standardized configuration.
 
     Args:
-        agent_id: Unique identifier for the agent.
-        name: Human-readable name.
+        agent_id: Unique identifier (used for report tracking, not passed to Agent).
+        name: Human-readable name (used as Agent identifier).
         role: Description of the agent's role within its team.
         team_id: ID of the parent team (for report tracking).
         instructions: List of instruction strings for the agent.
-        knowledge: Optional AgentKnowledge for RAG (per-agent isolated table).
+        knowledge: Optional Knowledge for RAG (per-agent isolated table).
         tools: Additional tools beyond the default ReportTools.
-        response_model: Optional Pydantic model for structured output.
+        output_model: Optional Pydantic model for structured output.
         use_haiku: Use Claude Haiku instead of Sonnet (for simple/fast tasks).
         num_history_runs: Number of previous runs to include in context.
 
@@ -51,17 +51,16 @@ def create_agent(
         all_tools.extend(tools)
 
     return Agent(
-        agent_id=agent_id,
         name=name,
         role=role,
         model=get_claude_haiku() if use_haiku else get_claude_sonnet(),
-        storage=storage,
+        db=db,
         knowledge=knowledge,
         search_knowledge=knowledge is not None,
         tools=all_tools,
         instructions=instructions,
-        response_model=response_model,
-        add_history_to_messages=True,
+        output_schema=output_model,
+        add_history_to_context=True,
         num_history_runs=num_history_runs,
         add_datetime_to_instructions=True,
         markdown=True,

@@ -1,6 +1,7 @@
 """Database table name registry and raw connection helpers for custom queries."""
 
 import psycopg
+
 from src.config.settings import settings
 
 # Convert the agno-style URL to psycopg-compatible format

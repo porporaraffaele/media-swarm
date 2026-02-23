@@ -7,9 +7,9 @@ so OpenAI is the recommended choice for quality/cost ratio.
 Requires OPENAI_API_KEY in environment.
 """
 
-from agno.embedder.openai import OpenAIEmbedder
+from agno.knowledge.embedder.openai import OpenAIEmbedder
 
 
 def get_embedder() -> OpenAIEmbedder:
     """Get the shared embedder instance for all knowledge bases."""
-    return OpenAIEmbedder(id="text-embedding-3-small", dimensions=1536)
+    return OpenAIEmbedder(id="text-embedding-3-small")
