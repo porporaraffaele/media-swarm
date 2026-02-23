@@ -62,6 +62,6 @@ def create_agent(
         output_schema=output_model,
         add_history_to_context=True,
         num_history_runs=num_history_runs,
-        add_datetime_to_instructions=True,
+        add_datetime_to_context=True,
         markdown=True,
     )

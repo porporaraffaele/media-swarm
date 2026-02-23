@@ -1,7 +1,8 @@
 services:
   pgvector:
-    image: agnohq/pgvector:16
+    image: pgvector/pgvector:pg16
     container_name: media-swarm-pgvector
+    command: postgres -c max_connections=500 -c shared_buffers=256MB
     environment:
       POSTGRES_DB: ai
       POSTGRES_USER: ai
@@ -18,18 +19,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-
-  agent-ui:
-    image: agnohq/agent-ui:latest
-    container_name: media-swarm-agent-ui
-    ports:
-      - "3000:3000"
-    environment:
-      AGENT_OS_URL: http://host.docker.internal:7777
-    depends_on:
-      pgvector:
-        condition: service_healthy
-    restart: unless-stopped
 
 volumes:
   pgdata:
