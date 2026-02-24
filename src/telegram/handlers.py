@@ -100,7 +100,7 @@ async def _run_team(update: Update, team_name: str, team_module: str, user_text:
 
     try:
         team = _get_team(team_module)
-        response = await team.arun(message=user_text)
+        response = await team.arun(input=user_text)
 
         # Extract the text content from the RunResponse
         result = _extract_response_text(response)

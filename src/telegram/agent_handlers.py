@@ -216,7 +216,7 @@ async def agent_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
     )
 
     try:
-        response = await agent.arun(message=message)
+        response = await agent.arun(input=message)
         result = _extract_text(response)
         await processing.delete()
         await _send_long(update, result)
