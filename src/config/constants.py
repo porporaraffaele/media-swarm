@@ -13,6 +13,7 @@ TEAM_CONTENT_FINDER = "content-finder"
 TEAM_CONTENT_CREATOR = "content-creator"
 TEAM_MASTER_ORCHESTRATOR = "master-orchestrator"
 TEAM_ANALYST = "analyst"
+TEAM_SALES = "sales"
 
 ALL_TEAM_IDS = [
     TEAM_BRANDING,
@@ -26,6 +27,7 @@ ALL_TEAM_IDS = [
     TEAM_CONTENT_CREATOR,
     TEAM_MASTER_ORCHESTRATOR,
     TEAM_ANALYST,
+    TEAM_SALES,
 ]
 
 # ─── Knowledge Base Table Names (one per sub-agent) ─────────────────────────
@@ -115,6 +117,15 @@ KB_TABLES = {
     "analyst-learning-loop": "kb_analyst_learning_loop",
     "analyst-report-aggregator": "kb_analyst_report_aggregator",
     "analyst-rag-improvement": "kb_analyst_rag_improvement",
+    "analyst-production-monitor": "kb_analyst_production_monitor",
+    # Sales
+    "sales-web-scraper": "kb_sales_web_scraper",
+    "sales-lead-generator": "kb_sales_lead_generator",
+    "sales-lead-qualifier": "kb_sales_lead_qualifier",
+    "sales-outreach-specialist": "kb_sales_outreach_specialist",
+    "sales-strategist": "kb_sales_strategist",
+    "sales-technical-consultant": "kb_sales_technical_consultant",
+    "sales-crm-manager": "kb_sales_crm_manager",
 }
 
 

@@ -88,53 +88,30 @@ async def add_document(
             status_code=400, detail="Provide at least one of: url, text_content, or file"
         )
 
-    # Determine source type and path
-    if file:
-        source_type = "file"
-        source_path = file.filename or "uploaded_file"
-    elif url:
-        source_type = "url"
-        source_path = url
-    else:
-        source_type = "text"
-        source_path = title or "inline_text"
-
-    # Get team_id from agent_id prefix
-    team_id = agent_id.rsplit("-", 1)[0] if "-" in agent_id else agent_id
-
     try:
-        with get_connection() as conn:
-            with conn.cursor() as cur:
-                cur.execute(
-                    """
-                    INSERT INTO knowledge_documents (
-                        agent_id, team_id, table_name, source_type,
-                        source_path, title, description, status
-                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, 'processing')
-                    RETURNING id
-                    """,
-                    (
-                        agent_id,
-                        team_id,
-                        KB_TABLES[agent_id],
-                        source_type,
-                        source_path,
-                        title,
-                        description,
-                    ),
-                )
-                doc_id = cur.fetchone()[0]
-            conn.commit()
+        from src.services.knowledge_loader import KnowledgeLoader
 
-        # TODO: Actually load the document into the PgVector knowledge base
-        # This will be implemented when the knowledge loading pipeline is built.
-        # For now, we register the document metadata.
+        loader = KnowledgeLoader()
+
+        if file:
+            file_data = await file.read()
+            result = await loader.aload_file_bytes(
+                agent_id=agent_id,
+                data=file_data,
+                filename=file.filename or "uploaded_file",
+                title=title,
+            )
+        elif url:
+            result = await loader.aload_url(agent_id=agent_id, url=url, title=title)
+        else:
+            result = await loader.aload_text(agent_id=agent_id, text=text_content, title=title)
 
         return {
-            "status": "registered",
-            "document_id": str(doc_id),
+            "status": result["status"],
+            "document_id": result["document_id"],
             "agent_id": agent_id,
-            "message": "Document registered. Knowledge loading will be processed.",
+            "chunk_count": result["chunk_count"],
+            "message": f"Document loaded into {agent_id} knowledge base.",
         }
     except Exception as e:
         logger.error(f"Failed to add document for {agent_id}: {e}")
@@ -171,15 +148,22 @@ async def remove_document(agent_id: str, doc_id: UUID):
 
 
 @router.post("/agents/{agent_id}/search")
-async def search_knowledge(agent_id: str, query: str = Form(...)):
-    """Search an agent's knowledge base (placeholder for future implementation)."""
+async def search_knowledge(agent_id: str, query: str = Form(...), max_results: int = 5):
+    """Search an agent's knowledge base using semantic search."""
     if agent_id not in KB_TABLES:
         raise HTTPException(status_code=404, detail=f"Agent '{agent_id}' not found")
 
-    # TODO: Use the agent's Knowledge instance to perform semantic search
-    return {
-        "agent_id": agent_id,
-        "query": query,
-        "results": [],
-        "message": "Search will be available once knowledge bases are populated.",
-    }
+    try:
+        from src.services.knowledge_loader import KnowledgeLoader
+
+        loader = KnowledgeLoader()
+        results = await loader.asearch(agent_id=agent_id, query=query, max_results=max_results)
+        return {
+            "agent_id": agent_id,
+            "query": query,
+            "results": results,
+            "total": len(results),
+        }
+    except Exception as e:
+        logger.error(f"Failed to search knowledge for {agent_id}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))

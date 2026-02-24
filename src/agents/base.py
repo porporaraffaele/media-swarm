@@ -16,6 +16,21 @@ from src.config.models import get_claude_haiku, get_claude_sonnet
 from src.db.connection import db
 from src.tools.reporting.report_tools import ReportTools
 
+# Mandatory report instructions appended to every agent
+_REPORT_INSTRUCTIONS = [
+    "",
+    "--- REPORT OBBLIGATORIO ---",
+    "Dopo OGNI task completata, DEVI salvare un report usando save_report().",
+    "Il report deve essere un JSON con questi campi:",
+    '  - "task_type": tipo di task (es. "search", "analysis", "content_creation")',
+    '  - "task_description": cosa ti è stato chiesto',
+    '  - "approach": come hai risolto il problema e perché hai scelto quella strada',
+    '  - "result_summary": riassunto del risultato ottenuto',
+    '  - "quality_score": autovalutazione da 1 a 10',
+    '  - "suggestions": eventuali miglioramenti per il futuro',
+    "Non saltare MAI il report. È fondamentale per il monitoraggio del sistema.",
+]
+
 
 def create_agent(
     agent_id: str,
@@ -58,7 +73,7 @@ def create_agent(
         knowledge=knowledge,
         search_knowledge=knowledge is not None,
         tools=all_tools,
-        instructions=instructions,
+        instructions=instructions + _REPORT_INSTRUCTIONS,
         output_schema=output_model,
         add_history_to_context=True,
         num_history_runs=num_history_runs,

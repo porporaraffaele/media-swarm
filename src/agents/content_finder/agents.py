@@ -1,7 +1,5 @@
 """Content Finder team sub-agents."""
 
-from agno.tools.tavily import TavilyTools
-
 from src.agents.base import create_agent
 from src.agents.content_finder.knowledge_setup import (
     niche_scout_knowledge,
@@ -12,6 +10,7 @@ from src.agents.content_finder.knowledge_setup import (
     web_scout_knowledge,
 )
 from src.config.constants import TEAM_CONTENT_FINDER
+from src.tools.search import get_tavily_tools
 
 social_media_scout = create_agent(
     agent_id="finder-social-scout",
@@ -19,7 +18,7 @@ social_media_scout = create_agent(
     role="Find brand-relevant content across all social media platforms",
     team_id=TEAM_CONTENT_FINDER,
     knowledge=social_scout_knowledge,
-    tools=[TavilyTools()],
+    tools=[get_tavily_tools()],
     instructions=[
         "You are an expert Social Media Scout.",
         "Use Tavily search to find trending social media content and discussions.",
@@ -39,7 +38,7 @@ web_content_scout = create_agent(
     role="Find relevant content from blogs, news sites, and RSS feeds",
     team_id=TEAM_CONTENT_FINDER,
     knowledge=web_scout_knowledge,
-    tools=[TavilyTools()],
+    tools=[get_tavily_tools()],
     instructions=[
         "You are an expert Web Content Scout.",
         "Use Tavily search to find the latest content across the web.",

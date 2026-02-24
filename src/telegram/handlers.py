@@ -5,15 +5,16 @@ Each handler:
 2. Sends a "processing" message
 3. Runs the appropriate team asynchronously
 4. Returns the response (split if > 4096 chars)
+5. Logs interaction under active project if set
 """
 
 import logging
 
-from telegram import Update
 from telegram.constants import ChatAction, ParseMode
 from telegram.ext import ContextTypes
 
 from src.config.settings import settings
+from telegram import Update
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +30,10 @@ def _is_authorized(update: Update) -> bool:
 async def _send_long_message(update: Update, text: str) -> None:
     """Send a message, splitting it if it exceeds Telegram's limit."""
     if len(text) <= MAX_MESSAGE_LENGTH:
-        await update.message.reply_text(text, parse_mode=ParseMode.MARKDOWN)
+        try:
+            await update.message.reply_text(text, parse_mode=ParseMode.MARKDOWN)
+        except Exception:
+            await update.message.reply_text(text)
         return
 
     # Split on newlines to avoid breaking mid-sentence
@@ -48,8 +52,28 @@ async def _send_long_message(update: Update, text: str) -> None:
         try:
             await update.message.reply_text(chunk, parse_mode=ParseMode.MARKDOWN)
         except Exception:
-            # Fallback without markdown if parsing fails
             await update.message.reply_text(chunk)
+
+
+def _log_to_project(chat_id: str, team_key: str, user_text: str, result: str) -> None:
+    """Log interaction to active project if set."""
+    try:
+        from src.telegram.context_manager import get_active_project
+
+        project_id = get_active_project(chat_id)
+        if project_id:
+            from src.services.project_service import ProjectService
+
+            svc = ProjectService()
+            svc.log_session(
+                project_id=project_id,
+                team_id=team_key,
+                agent_id=None,
+                prompt=user_text,
+                response=result[:1000] if result else None,
+            )
+    except Exception:
+        logger.debug("Could not log to project", exc_info=True)
 
 
 async def _run_team(update: Update, team_name: str, team_module: str, user_text: str) -> None:
@@ -59,7 +83,9 @@ async def _run_team(update: Update, team_name: str, team_module: str, user_text:
         return
 
     if not user_text:
-        await update.message.reply_text(f"Scrivi qualcosa dopo il comando.\nEs: /{team_module} la tua richiesta")
+        await update.message.reply_text(
+            f"Scrivi qualcosa dopo il comando.\nEs: /{team_module} la tua richiesta"
+        )
         return
 
     await update.effective_chat.send_action(ChatAction.TYPING)
@@ -73,6 +99,10 @@ async def _run_team(update: Update, team_name: str, team_module: str, user_text:
         result = _extract_response_text(response)
         await processing.delete()
         await _send_long_message(update, result)
+
+        # Log to active project
+        chat_id = str(update.effective_chat.id)
+        _log_to_project(chat_id, team_module, user_text, result)
 
     except Exception as e:
         logger.exception("Error running team %s", team_name)
@@ -93,6 +123,7 @@ def _get_team(team_key: str):
         "find": "src.agents.content_finder.team:content_finder_team",
         "create": "src.agents.content_creator.team:content_creator_team",
         "analyst": "src.agents.analyst.team:analyst_team",
+        "sales": "src.agents.sales.team:sales_team",
     }
 
     module_path, attr_name = teams[team_key].rsplit(":", 1)
@@ -133,9 +164,9 @@ async def start_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
         return
 
     await update.message.reply_text(
-        "Benvenuto in *Media Swarm*!\n\n"
-        "Sono la tua AI media company con 11 team specializzati.\n\n"
-        "Usa /help per vedere i comandi disponibili.",
+        "Benvenuto in *Media Swarm*! 🚀\n\n"
+        "Sono la tua AI media company con *12 team* e *81 agenti* specializzati.\n\n"
+        "Usa /help per vedere tutti i comandi disponibili.",
         parse_mode=ParseMode.MARKDOWN,
     )
 
@@ -146,20 +177,39 @@ async def help_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         return
 
     await update.message.reply_text(
-        "*Comandi disponibili:*\n\n"
-        "/ask `domanda` - Domanda libera (Master Orchestrator)\n"
-        "/branding `richiesta` - Team Branding\n"
-        "/copy `richiesta` - Team Copywriting\n"
-        "/design `richiesta` - Team Graphic Design\n"
-        "/competitors `richiesta` - Team Competitors\n"
-        "/news `richiesta` - Team News\n"
-        "/community `richiesta` - Team Community\n"
-        "/ideation `richiesta` - Team Content Ideation\n"
-        "/find `richiesta` - Team Content Finder\n"
-        "/create `richiesta` - Team Content Creator\n"
-        "/analyst `richiesta` - Team Analyst\n"
-        "/status - Stato del sistema\n\n"
-        "Puoi anche scrivere senza comando per parlare con il Master Orchestrator.",
+        "*TEAM (12):*\n"
+        "/ask `msg` — Master Orchestrator\n"
+        "/branding `msg` — Branding\n"
+        "/copy `msg` — Copywriting\n"
+        "/design `msg` — Graphic Design\n"
+        "/competitors `msg` — Competitors & Market\n"
+        "/news `msg` — News\n"
+        "/community `msg` — Community\n"
+        "/ideation `msg` — Content Ideation\n"
+        "/find `msg` — Content Finder\n"
+        "/create `msg` — Content Creator\n"
+        "/analyst `msg` — Analyst\n"
+        "/sales `msg` — Sales & Lead Gen\n\n"
+        "*AGENTI SINGOLI:*\n"
+        "/agent `id` `msg` — Esegui un agente\n"
+        "/agents — Lista tutti gli agenti\n"
+        "/agent\\_info `id` — Info agente\n\n"
+        "*KNOWLEDGE (RAG):*\n"
+        "/kb\\_upload `id` — Carica file (poi invia)\n"
+        "/kb\\_url `id` `url` — Carica URL\n"
+        "/kb\\_list `id` — Lista documenti\n"
+        "/kb\\_search `id` `query` — Cerca nel RAG\n\n"
+        "*REPORT & MONITORING:*\n"
+        "/reports `id` — Report di un agente\n"
+        "/reports\\_team `team` — Report di un team\n\n"
+        "*PROGETTI:*\n"
+        "/project\\_new `nome` — Crea progetto\n"
+        "/projects — Lista progetti\n"
+        "/project\\_teams `id` `t1 t2` — Assegna team\n"
+        "/project\\_set `id` — Progetto attivo\n"
+        "/project\\_info `id` — Dettagli\n\n"
+        "/status — Stato sistema\n\n"
+        "_Scrivi senza comando per il Master Orchestrator._",
         parse_mode=ParseMode.MARKDOWN,
     )
 
@@ -169,12 +219,46 @@ async def status_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     if not _is_authorized(update):
         return
 
+    # Count KB docs
+    kb_count = 0
+    report_count = 0
+    try:
+        from src.db.tables import get_connection
+
+        with get_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT COUNT(*) FROM knowledge_documents WHERE status != 'archived'")
+                row = cur.fetchone()
+                kb_count = row[0] if row else 0
+                cur.execute("SELECT COUNT(*) FROM reports")
+                row = cur.fetchone()
+                report_count = row[0] if row else 0
+    except Exception:
+        pass
+
+    # Check active project
+    active_project = "Nessuno"
+    try:
+        from src.services.project_service import ProjectService
+        from src.telegram.context_manager import get_active_project
+
+        pid = get_active_project(str(update.effective_chat.id))
+        if pid:
+            svc = ProjectService()
+            p = svc.get_project(pid)
+            if p:
+                active_project = p["name"]
+    except Exception:
+        pass
+
     await update.message.reply_text(
         "*Media Swarm Status*\n\n"
-        "Teams: 11\n"
-        "Sub-agents: 73\n"
+        "Team: 12\n"
+        "Sub-agenti: 81\n"
+        f"Documenti RAG: {kb_count}\n"
+        f"Report salvati: {report_count}\n"
+        f"Progetto attivo: {active_project}\n"
         "API: http://localhost:7777\n"
-        "Agent UI: http://localhost:3000\n"
         "Status: Running",
         parse_mode=ParseMode.MARKDOWN,
     )
@@ -244,6 +328,12 @@ async def analyst_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     """Handle /analyst command."""
     user_text = " ".join(context.args) if context.args else ""
     await _run_team(update, "Analyst", "analyst", user_text)
+
+
+async def sales_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Handle /sales command."""
+    user_text = " ".join(context.args) if context.args else ""
+    await _run_team(update, "Sales & Lead Generation", "sales", user_text)
 
 
 async def free_text_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:

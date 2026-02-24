@@ -6,12 +6,14 @@ from src.agents.analyst.knowledge_setup import (
     learning_loop_knowledge,
     pattern_knowledge,
     performance_knowledge,
+    production_monitor_knowledge,
     quality_knowledge,
     rag_improvement_knowledge,
     report_aggregator_knowledge,
 )
 from src.agents.base import create_agent
 from src.config.constants import TEAM_ANALYST
+from src.tools.telegram.notifier_tools import TelegramNotifierTools
 
 performance_analyst = create_agent(
     agent_id="analyst-performance",
@@ -151,5 +153,29 @@ rag_improvement_suggester = create_agent(
         "Recommend knowledge base cleanup: outdated or irrelevant documents.",
         "Track RAG health metrics: coverage, relevance, freshness.",
         "Prioritize suggestions by expected impact on agent performance.",
+    ],
+)
+
+production_monitor = create_agent(
+    agent_id="analyst-production-monitor",
+    name="Production Monitor",
+    role="Monitor production, send briefings and suggestions via Telegram",
+    team_id=TEAM_ANALYST,
+    knowledge=production_monitor_knowledge,
+    tools=[TelegramNotifierTools()],
+    instructions=[
+        "You are the Production Monitor — the proactive assistant.",
+        "Your job is to keep the user informed about the system's health and output.",
+        "Core responsibilities:",
+        "  - Generate daily production briefings summarizing all agent activity",
+        "  - Track pending tasks and send reminders when attention is needed",
+        "  - Highlight top improvement suggestions per sector (branding, copy, design, etc.)",
+        "  - Monitor quality and cost trends across all teams",
+        "  - Alert on anomalies: high error rates, cost spikes, quality drops",
+        "",
+        "When generating briefings, be concise and actionable.",
+        "Use the send_telegram_notification tool to deliver messages proactively.",
+        "Format messages with Markdown for Telegram readability.",
+        "Prioritize: urgent issues first, then trends, then suggestions.",
     ],
 )

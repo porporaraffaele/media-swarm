@@ -1,7 +1,5 @@
 """News Agent team sub-agents."""
 
-from agno.tools.tavily import TavilyTools
-
 from src.agents.base import create_agent
 from src.agents.news.knowledge_setup import (
     aggregator_knowledge,
@@ -12,6 +10,7 @@ from src.agents.news.knowledge_setup import (
     trend_detector_knowledge,
 )
 from src.config.constants import TEAM_NEWS
+from src.tools.search import get_tavily_tools
 
 news_aggregator = create_agent(
     agent_id="news-aggregator",
@@ -19,7 +18,7 @@ news_aggregator = create_agent(
     role="Collect and aggregate news from RSS feeds and web sources",
     team_id=TEAM_NEWS,
     knowledge=aggregator_knowledge,
-    tools=[TavilyTools()],
+    tools=[get_tavily_tools()],
     instructions=[
         "You are an expert News Aggregator.",
         "Collect news from configured RSS feeds and web sources.",
@@ -37,7 +36,7 @@ trend_detector = create_agent(
     role="Identify emerging trends from news patterns",
     team_id=TEAM_NEWS,
     knowledge=trend_detector_knowledge,
-    tools=[TavilyTools()],
+    tools=[get_tavily_tools()],
     instructions=[
         "You are an expert Trend Detector.",
         "Use Tavily search to research emerging trends and validate patterns.",

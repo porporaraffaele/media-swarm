@@ -18,6 +18,7 @@ from src.agents.master_orchestrator.agents import (
     workflow_manager,
 )
 from src.agents.news.team import news_team
+from src.agents.sales.team import sales_team
 from src.config.models import get_claude_sonnet
 from src.db.connection import db
 
@@ -46,6 +47,7 @@ master_orchestrator = Team(
         content_ideation_team,
         content_finder_team,
         content_creator_team,
+        sales_team,
     ],
     db=db,
     instructions=[
@@ -69,6 +71,7 @@ master_orchestrator = Team(
         "- Content Ideation Team: ideas, hooks, formats, calendar",
         "- Content Finder Team: find relevant content across platforms",
         "- Content Creator Team: generate images and videos with AI",
+        "- Sales Team: lead generation, qualification, outreach, CRM pipeline",
     ],
     show_members_responses=True,
     enable_agentic_state=True,
