@@ -25,10 +25,16 @@ _REPORT_INSTRUCTIONS = [
     '  - "task_type": tipo di task (es. "search", "analysis", "content_creation")',
     '  - "task_description": cosa ti è stato chiesto',
     '  - "approach": come hai risolto il problema e perché hai scelto quella strada',
-    '  - "result_summary": riassunto del risultato ottenuto',
+    '  - "result_summary": riassunto del risultato ottenuto — INCLUDI TUTTE le',
+    "    DECISIONI prese (nomi scelti, colori, tono, target, posizionamento, ecc.)",
+    "    perché altri agenti useranno il tuo report come contesto per il loro lavoro.",
+    '  - "key_decisions": dizionario delle decisioni chiave (es. {"brand_name": "X",',
+    '    "primary_color": "#123456", "tone": "professionale ma caldo"})',
     '  - "quality_score": autovalutazione da 1 a 10',
     '  - "suggestions": eventuali miglioramenti per il futuro',
-    "Non saltare MAI il report. È fondamentale per il monitoraggio del sistema.",
+    '  - "downstream_teams": lista dei team che dovrebbero usare questi risultati',
+    "Non saltare MAI il report. È fondamentale per il monitoraggio del sistema",
+    "e per la comunicazione inter-agente.",
 ]
 
 

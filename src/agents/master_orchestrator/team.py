@@ -2,6 +2,8 @@
 
 from agno.team import Team, TeamMode
 
+from src.agents.ads_expert.team import ads_expert_team
+from src.agents.analyst.team import analyst_team
 from src.agents.branding.team import branding_team
 from src.agents.community.team import community_team
 from src.agents.competitors.team import competitors_team
@@ -19,6 +21,7 @@ from src.agents.master_orchestrator.agents import (
 )
 from src.agents.news.team import news_team
 from src.agents.sales.team import sales_team
+from src.agents.web_blog.team import web_blog_team
 from src.config.models import get_claude_sonnet
 from src.db.connection import db
 
@@ -26,7 +29,7 @@ master_orchestrator = Team(
     name="Master Orchestrator",
     role=(
         "Top-level coordinator that receives user requests, decomposes tasks, "
-        "and delegates to specialized teams"
+        "and delegates to all 14 specialized teams"
     ),
     model=get_claude_sonnet(),
     mode=TeamMode.coordinate,
@@ -37,7 +40,7 @@ master_orchestrator = Team(
         workflow_manager,
         cost_controller,
         progress_tracker,
-        # All domain teams as nested members
+        # All 13 domain teams as nested members
         branding_team,
         copywriting_team,
         graphic_design_team,
@@ -47,7 +50,10 @@ master_orchestrator = Team(
         content_ideation_team,
         content_finder_team,
         content_creator_team,
+        analyst_team,
         sales_team,
+        ads_expert_team,
+        web_blog_team,
     ],
     db=db,
     instructions=[
@@ -61,17 +67,28 @@ master_orchestrator = Team(
         "6. Use Progress Tracker to report on completion.",
         "7. Synthesize all team outputs into a final deliverable.",
         "",
-        "Available domain teams:",
-        "- Branding Team: brand strategy, identity, naming, tone",
-        "- Copywriting Team: SEO, social, email, ads, scripts",
-        "- Graphic Design Team: social graphics, templates, infographics",
-        "- Competitors Team: market analysis, SWOT, benchmarks",
-        "- News Team: news aggregation, trends, fact-checking",
-        "- Community Team: engagement, growth, crisis, influencers",
-        "- Content Ideation Team: ideas, hooks, formats, calendar",
-        "- Content Finder Team: find relevant content across platforms",
-        "- Content Creator Team: generate images and videos with AI",
+        "IMPORTANT workflow rules:",
+        "- For branding projects: ALWAYS start with the Branding Team first.",
+        "  Branding output (name, values, visual identity, tone) must be ready",
+        "  BEFORE other teams (Copywriting, Graphic Design, Ads, Web) can work.",
+        "- For content campaigns: Competitors analysis → Content Ideation → then",
+        "  Content Creator, Copywriting, and Graphic Design in parallel.",
+        "- Pass upstream team outputs as context to downstream teams.",
+        "",
+        "Available domain teams (14):",
+        "- Branding Team: brand strategy, identity, naming, tone, positioning",
+        "- Copywriting Team: SEO, social, email, ads, scripts, UX copy",
+        "- Graphic Design Team: social graphics, templates, infographics, motion",
+        "- Competitors Team: market analysis, SWOT, benchmarks, segmentation",
+        "- News Team: news aggregation, trends, fact-checking, alerts",
+        "- Community Team: engagement, growth, crisis, influencers, events",
+        "- Content Ideation Team: ideas, hooks, formats, calendar, viral scoring",
+        "- Content Finder Team: find content across social, web, niche platforms",
+        "- Content Creator Team: generate images and videos with AI tools",
+        "- Analyst Team: performance analysis, quality audit, self-improvement",
         "- Sales Team: lead generation, qualification, outreach, CRM pipeline",
+        "- Ads Expert Team: Facebook, Google, TikTok, LinkedIn, YouTube campaigns",
+        "- Web/Blog Team: SEO, blog content, landing pages, email, analytics",
     ],
     show_members_responses=True,
     enable_agentic_state=True,
