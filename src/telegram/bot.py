@@ -6,7 +6,7 @@ Runs alongside the FastAPI AgentOS server using PTB's async application.
 
 import logging
 
-from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters
+from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, MessageHandler, filters
 
 from src.config.settings import settings
 
@@ -37,6 +37,7 @@ from src.telegram.handlers import (
     sales_handler,
     start_handler,
     status_handler,
+    unknown_command_handler,
 )
 
 # Knowledge handlers
@@ -112,8 +113,17 @@ def create_telegram_app():
     # ─── Document upload handler (for /kb_upload file flow) ────────────────
     app.add_handler(MessageHandler(filters.Document.ALL, kb_document_handler))
 
+    # ─── Unknown command handler (catch-all for unrecognized /commands) ────
+    app.add_handler(MessageHandler(filters.COMMAND, unknown_command_handler))
+
     # ─── Free text handler (no command) → Master Orchestrator ──────────────
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, free_text_handler))
+
+    # ─── Global error handler ──────────────────────────────────────────────
+    async def _error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> None:
+        logger.error("Telegram handler error: %s", context.error, exc_info=context.error)
+
+    app.add_error_handler(_error_handler)
 
     logger.info("Telegram bot configured with 30 commands + file upload + free text")
     return app

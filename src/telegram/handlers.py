@@ -24,7 +24,14 @@ MAX_MESSAGE_LENGTH = 4096
 def _is_authorized(update: Update) -> bool:
     """Check if the sender is the authorized user."""
     chat_id = str(update.effective_chat.id)
-    return chat_id == settings.telegram_chat_id
+    authorized = chat_id == settings.telegram_chat_id
+    if not authorized:
+        logger.warning(
+            "Unauthorized access: chat_id=%s, expected=%s",
+            chat_id,
+            settings.telegram_chat_id,
+        )
+    return authorized
 
 
 async def _send_long_message(update: Update, text: str) -> None:
@@ -159,6 +166,7 @@ def _extract_response_text(response) -> str:
 
 async def start_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Handle /start command."""
+    logger.info("start_handler called by chat_id=%s", update.effective_chat.id)
     if not _is_authorized(update):
         await update.message.reply_text("Non sei autorizzato a usare questo bot.")
         return
@@ -336,8 +344,25 @@ async def sales_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
     await _run_team(update, "Sales & Lead Generation", "sales", user_text)
 
 
+async def unknown_command_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Handle unrecognized commands."""
+    logger.info(
+        "Unknown command from chat_id=%s: %s",
+        update.effective_chat.id,
+        update.message.text,
+    )
+    if not _is_authorized(update):
+        return
+    await update.message.reply_text("Comando non riconosciuto. Usa /help per la lista.")
+
+
 async def free_text_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Handle free text messages (no command) - routes to Master Orchestrator."""
+    logger.info(
+        "Free text from chat_id=%s: %s",
+        update.effective_chat.id,
+        update.message.text[:50] if update.message.text else "",
+    )
     if not _is_authorized(update):
         return
 
