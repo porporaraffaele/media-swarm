@@ -14,6 +14,8 @@ TEAM_CONTENT_CREATOR = "content-creator"
 TEAM_MASTER_ORCHESTRATOR = "master-orchestrator"
 TEAM_ANALYST = "analyst"
 TEAM_SALES = "sales"
+TEAM_ADS_EXPERT = "ads-expert"
+TEAM_WEB_BLOG = "web-blog"
 
 ALL_TEAM_IDS = [
     TEAM_BRANDING,
@@ -28,6 +30,8 @@ ALL_TEAM_IDS = [
     TEAM_MASTER_ORCHESTRATOR,
     TEAM_ANALYST,
     TEAM_SALES,
+    TEAM_ADS_EXPERT,
+    TEAM_WEB_BLOG,
 ]
 
 # ─── Knowledge Base Table Names (one per sub-agent) ─────────────────────────
@@ -126,6 +130,24 @@ KB_TABLES = {
     "sales-strategist": "kb_sales_strategist",
     "sales-technical-consultant": "kb_sales_technical_consultant",
     "sales-crm-manager": "kb_sales_crm_manager",
+    # Ads Expert
+    "ads-fb-instagram": "kb_ads_fb_instagram",
+    "ads-google": "kb_ads_google",
+    "ads-tiktok": "kb_ads_tiktok",
+    "ads-linkedin": "kb_ads_linkedin",
+    "ads-youtube": "kb_ads_youtube",
+    "ads-creative": "kb_ads_creative",
+    "ads-ab-optimization": "kb_ads_ab_optimization",
+    "ads-budget-roi": "kb_ads_budget_roi",
+    # Web / Blog
+    "web-seo-technical": "kb_web_seo_technical",
+    "web-blog-writer": "kb_web_blog_writer",
+    "web-landing-page": "kb_web_landing_page",
+    "web-cms-manager": "kb_web_cms_manager",
+    "web-analytics": "kb_web_analytics",
+    "web-email-marketing": "kb_web_email_marketing",
+    "web-site-performance": "kb_web_site_performance",
+    "web-content-calendar": "kb_web_content_calendar",
 }
 
 

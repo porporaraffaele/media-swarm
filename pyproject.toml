@@ -1,7 +1,7 @@
 [project]
 name = "media-swarm"
 version = "0.1.0"
-description = "AI-powered media company with 11 specialized agent teams"
+description = "AI-powered media company with 14 specialized agent teams"
 requires-python = ">=3.12"
 dependencies = [
     # Agent Framework
@@ -35,6 +35,8 @@ dependencies = [
     "python-dotenv>=1.0.0",
     "schedule>=1.2.0",
     "python-multipart>=0.0.12",
+    # Dashboard
+    "streamlit>=1.38.0",
 ]
 
 [project.optional-dependencies]

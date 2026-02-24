@@ -1,10 +1,11 @@
 """Media Swarm - AgentOS Main Entrypoint.
 
 Starts the FastAPI server with:
-- All 12 agent teams registered via Agno AgentOS
+- All 14 agent teams registered via Agno AgentOS
 - Custom admin routes for knowledge, reports, and agent configuration
 - Telegram bot running in parallel via PTB polling
 - Agent UI frontend connects to this server at port 7777
+- Streamlit dashboard connects at port 8501
 
 Usage:
     uv run python -m src.app
@@ -61,12 +62,13 @@ def _create_app() -> FastAPI:
     """Create the full Media Swarm application.
 
     1. Creates a base FastAPI app with custom admin routes + Telegram lifespan
-    2. Imports all 12 teams (requires PostgreSQL running)
+    2. Imports all 14 teams (requires PostgreSQL running)
     3. Wraps everything in AgentOS which provides team/agent/session routes
     4. Returns the combined FastAPI app
     """
     from agno.os import AgentOS
 
+    from src.agents.ads_expert.team import ads_expert_team
     from src.agents.analyst.team import analyst_team
     from src.agents.branding.team import branding_team
     from src.agents.community.team import community_team
@@ -79,13 +81,14 @@ def _create_app() -> FastAPI:
     from src.agents.master_orchestrator.team import master_orchestrator
     from src.agents.news.team import news_team
     from src.agents.sales.team import sales_team
+    from src.agents.web_blog.team import web_blog_team
     from src.db.connection import db
 
     # Base app with custom admin routes and Telegram bot lifespan
     base_app = FastAPI(
         title="Media Swarm",
-        description="AI-powered media company with 12 specialized agent teams",
-        version="0.2.0",
+        description="AI-powered media company with 14 specialized agent teams",
+        version="0.3.0",
         lifespan=_lifespan,
     )
     base_app.include_router(health.router)
@@ -97,20 +100,21 @@ def _create_app() -> FastAPI:
     async def root():
         return {
             "name": "Media Swarm",
-            "version": "0.2.0",
+            "version": "0.3.0",
             "status": "running",
-            "teams": 12,
-            "sub_agents": 81,
+            "teams": 14,
+            "sub_agents": 97,
             "telegram": _tg_app is not None,
             "docs": "/docs",
             "agent_ui": "http://localhost:3000",
+            "dashboard": "http://localhost:8501",
         }
 
     # AgentOS wraps the base app and adds team/agent/session routes
     agent_os = AgentOS(
         name="Media Swarm",
-        description="AI-powered media company with 12 specialized agent teams",
-        version="0.2.0",
+        description="AI-powered media company with 14 specialized agent teams",
+        version="0.3.0",
         teams=[
             master_orchestrator,
             branding_team,
@@ -124,16 +128,20 @@ def _create_app() -> FastAPI:
             content_creator_team,
             analyst_team,
             sales_team,
+            ads_expert_team,
+            web_blog_team,
         ],
         db=db,
         base_app=base_app,
         cors_allowed_origins=[
             "http://localhost:3000",
             "http://127.0.0.1:3000",
+            "http://localhost:8501",
+            "http://127.0.0.1:8501",
         ],
     )
 
-    logger.info("AgentOS initialized with 12 teams (81 sub-agents)")
+    logger.info("AgentOS initialized with 14 teams (97 sub-agents)")
     return agent_os.get_app()
 
 

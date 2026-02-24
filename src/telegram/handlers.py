@@ -131,6 +131,8 @@ def _get_team(team_key: str):
         "create": "src.agents.content_creator.team:content_creator_team",
         "analyst": "src.agents.analyst.team:analyst_team",
         "sales": "src.agents.sales.team:sales_team",
+        "ads": "src.agents.ads_expert.team:ads_expert_team",
+        "web": "src.agents.web_blog.team:web_blog_team",
     }
 
     module_path, attr_name = teams[team_key].rsplit(":", 1)
@@ -173,7 +175,7 @@ async def start_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
 
     await update.message.reply_text(
         "Benvenuto in *Media Swarm*! 🚀\n\n"
-        "Sono la tua AI media company con *12 team* e *81 agenti* specializzati.\n\n"
+        "Sono la tua AI media company con *14 team* e *97 agenti* specializzati.\n\n"
         "Usa /help per vedere tutti i comandi disponibili.",
         parse_mode=ParseMode.MARKDOWN,
     )
@@ -185,7 +187,7 @@ async def help_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         return
 
     await update.message.reply_text(
-        "*TEAM (12):*\n"
+        "*TEAM (14):*\n"
         "/ask `msg` — Master Orchestrator\n"
         "/branding `msg` — Branding\n"
         "/copy `msg` — Copywriting\n"
@@ -197,7 +199,9 @@ async def help_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         "/find `msg` — Content Finder\n"
         "/create `msg` — Content Creator\n"
         "/analyst `msg` — Analyst\n"
-        "/sales `msg` — Sales & Lead Gen\n\n"
+        "/sales `msg` — Sales & Lead Gen\n"
+        "/ads `msg` — Ads Expert\n"
+        "/web `msg` — Web/Blog Management\n\n"
         "*AGENTI SINGOLI:*\n"
         "/agent `id` `msg` — Esegui un agente\n"
         "/agents — Lista tutti gli agenti\n"
@@ -261,8 +265,8 @@ async def status_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
 
     await update.message.reply_text(
         "*Media Swarm Status*\n\n"
-        "Team: 12\n"
-        "Sub-agenti: 81\n"
+        "Team: 14\n"
+        "Sub-agenti: 97\n"
         f"Documenti RAG: {kb_count}\n"
         f"Report salvati: {report_count}\n"
         f"Progetto attivo: {active_project}\n"
@@ -342,6 +346,18 @@ async def sales_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
     """Handle /sales command."""
     user_text = " ".join(context.args) if context.args else ""
     await _run_team(update, "Sales & Lead Generation", "sales", user_text)
+
+
+async def ads_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Handle /ads command — Ads Expert Team."""
+    user_text = " ".join(context.args) if context.args else ""
+    await _run_team(update, "Ads Expert", "ads", user_text)
+
+
+async def web_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Handle /web command — Web/Blog Management Team."""
+    user_text = " ".join(context.args) if context.args else ""
+    await _run_team(update, "Web/Blog Management", "web", user_text)
 
 
 async def unknown_command_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:

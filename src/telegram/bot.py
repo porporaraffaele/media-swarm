@@ -1,6 +1,6 @@
 """Telegram bot for Media Swarm.
 
-Provides full access to 12 teams, 81 agents, RAG knowledge, reports, and projects.
+Provides full access to 14 teams, 97 agents, RAG knowledge, reports, and projects.
 Runs alongside the FastAPI AgentOS server using PTB's async application.
 """
 
@@ -21,6 +21,7 @@ from src.telegram.agent_handlers import (
 
 # Team handlers
 from src.telegram.handlers import (
+    ads_handler,
     analyst_handler,
     ask_handler,
     branding_handler,
@@ -38,6 +39,7 @@ from src.telegram.handlers import (
     start_handler,
     status_handler,
     unknown_command_handler,
+    web_handler,
 )
 
 # Knowledge handlers
@@ -89,6 +91,8 @@ def create_telegram_app():
     app.add_handler(CommandHandler("create", create_handler))
     app.add_handler(CommandHandler("analyst", analyst_handler))
     app.add_handler(CommandHandler("sales", sales_handler))
+    app.add_handler(CommandHandler("ads", ads_handler))
+    app.add_handler(CommandHandler("web", web_handler))
 
     # ─── Agent commands ────────────────────────────────────────────────────
     app.add_handler(CommandHandler("agent", agent_handler))
@@ -125,7 +129,7 @@ def create_telegram_app():
 
     app.add_error_handler(_error_handler)
 
-    logger.info("Telegram bot configured with 30 commands + file upload + free text")
+    logger.info("Telegram bot configured with 32 commands + file upload + free text")
     return app
 
 

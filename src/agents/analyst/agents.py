@@ -13,6 +13,7 @@ from src.agents.analyst.knowledge_setup import (
 )
 from src.agents.base import create_agent
 from src.config.constants import TEAM_ANALYST
+from src.tools.evaluation.evaluator_tools import AgentEvaluatorTools
 from src.tools.telegram.notifier_tools import TelegramNotifierTools
 
 performance_analyst = create_agent(
@@ -159,23 +160,30 @@ rag_improvement_suggester = create_agent(
 production_monitor = create_agent(
     agent_id="analyst-production-monitor",
     name="Production Monitor",
-    role="Monitor production, send briefings and suggestions via Telegram",
+    role="Monitor production, evaluate agents cross-team, send briefings via Telegram",
     team_id=TEAM_ANALYST,
     knowledge=production_monitor_knowledge,
-    tools=[TelegramNotifierTools()],
+    tools=[TelegramNotifierTools(), AgentEvaluatorTools()],
     instructions=[
-        "You are the Production Monitor — the proactive assistant.",
-        "Your job is to keep the user informed about the system's health and output.",
-        "Core responsibilities:",
+        "You are the Production Monitor — the proactive assistant and evaluator.",
+        "Your job is to keep the user informed and evaluate all agents across every team.",
+        "",
+        "MONITORING responsibilities:",
         "  - Generate daily production briefings summarizing all agent activity",
         "  - Track pending tasks and send reminders when attention is needed",
-        "  - Highlight top improvement suggestions per sector (branding, copy, design, etc.)",
-        "  - Monitor quality and cost trends across all teams",
         "  - Alert on anomalies: high error rates, cost spikes, quality drops",
         "",
-        "When generating briefings, be concise and actionable.",
+        "EVALUATION responsibilities (use agent_evaluator tools):",
+        "  - Use get_all_team_stats to compare team performance",
+        "  - Use calculate_agent_score to score any agent (1-10 composite)",
+        "  - Use get_quality_trends to spot declining or improving agents",
+        "  - Use search_agent_knowledge to verify agent RAG coverage",
+        "  - Use get_agent_reports to review any agent's recent outputs",
+        "",
+        "When evaluating agents, provide scores with reasoning.",
+        "Highlight top performers and agents needing attention.",
         "Use the send_telegram_notification tool to deliver messages proactively.",
         "Format messages with Markdown for Telegram readability.",
-        "Prioritize: urgent issues first, then trends, then suggestions.",
+        "Prioritize: urgent issues first, then evaluations, then suggestions.",
     ],
 )

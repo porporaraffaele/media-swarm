@@ -115,6 +115,24 @@ AGENT_REGISTRY: dict[str, str] = {
     "sales-strategist": "src.agents.sales.agents:sales_strategist",
     "sales-technical-consultant": "src.agents.sales.agents:technical_consultant",
     "sales-crm-manager": "src.agents.sales.agents:crm_manager",
+    # Ads Expert
+    "ads-fb-instagram": "src.agents.ads_expert.agents:fb_instagram_specialist",
+    "ads-google": "src.agents.ads_expert.agents:google_ads_specialist",
+    "ads-tiktok": "src.agents.ads_expert.agents:tiktok_ads_specialist",
+    "ads-linkedin": "src.agents.ads_expert.agents:linkedin_ads_specialist",
+    "ads-youtube": "src.agents.ads_expert.agents:youtube_ads_specialist",
+    "ads-creative": "src.agents.ads_expert.agents:ad_creative_specialist",
+    "ads-ab-optimization": "src.agents.ads_expert.agents:ab_optimization_specialist",
+    "ads-budget-roi": "src.agents.ads_expert.agents:budget_roi_analyst",
+    # Web/Blog Management
+    "web-seo-technical": "src.agents.web_blog.agents:seo_technical_specialist",
+    "web-blog-writer": "src.agents.web_blog.agents:blog_content_writer",
+    "web-landing-page": "src.agents.web_blog.agents:landing_page_specialist",
+    "web-cms-manager": "src.agents.web_blog.agents:cms_manager",
+    "web-analytics": "src.agents.web_blog.agents:web_analytics_specialist",
+    "web-email-marketing": "src.agents.web_blog.agents:email_marketing_specialist",
+    "web-site-performance": "src.agents.web_blog.agents:site_performance_monitor",
+    "web-content-calendar": "src.agents.web_blog.agents:content_calendar_manager",
 }
 
 # Team display names
@@ -131,6 +149,8 @@ TEAM_NAMES: dict[str, str] = {
     "master-orchestrator": "Master Orchestrator",
     "analyst": "Analyst",
     "sales": "Sales & Lead Gen",
+    "ads-expert": "Ads Expert",
+    "web-blog": "Web/Blog Management",
 }
 
 
@@ -240,7 +260,7 @@ async def agents_list_handler(update: Update, context: ContextTypes.DEFAULT_TYPE
             teams[team_prefix] = []
         teams[team_prefix].append(agent_id)
 
-    lines = ["*Tutti gli agenti (81):*\n"]
+    lines = ["*Tutti gli agenti (97):*\n"]
     for team_id in ALL_TEAM_IDS:
         display_name = TEAM_NAMES.get(team_id, team_id)
         # Find agents matching this team
