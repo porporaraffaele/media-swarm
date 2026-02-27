@@ -19,7 +19,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
-from src.api.routes import agent_config, health, knowledge_admin, reports
+from src.api.routes import agent_config, health, knowledge_admin, projects, reports, run
 from src.config.settings import settings
 
 logging.basicConfig(
@@ -95,6 +95,8 @@ def _create_app() -> FastAPI:
     base_app.include_router(knowledge_admin.router)
     base_app.include_router(reports.router)
     base_app.include_router(agent_config.router)
+    base_app.include_router(projects.router)
+    base_app.include_router(run.router)
 
     @base_app.get("/")
     async def root():
